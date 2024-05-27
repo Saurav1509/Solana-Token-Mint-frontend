@@ -32,11 +32,12 @@ export const MintToForm: FC = () => {
     // BUILD AND SEND MINT TRANSACTION HERE 
 
     const mint = new web3.PublicKey(event.target.mint.value);
-    const receipient = new web3.PublicKey(event.target.receipient.value);
+    const recipient = new web3.PublicKey(event.target.recipient.value);
+    const amount = event.target.amount.value
 
     const associatedTokenAddress = await getAssociatedTokenAddress(
       mint,
-      receipient,
+      recipient,
       false,
       TOKEN_PROGRAM_ID,
       ASSOCIATED_TOKEN_PROGRAM_ID
@@ -45,13 +46,16 @@ export const MintToForm: FC = () => {
     const transaction = new web3.Transaction().add(
       createMintToInstruction(
         mint,
-        receipient,
-        receipient,
-        10000000000
+        associatedTokenAddress,
+        recipient,
+        amount
       )
     );
 
     const signature = await sendTransaction(transaction, connection);
+
+    await connection.confirmTransaction(signature, "confirmed");
+
     setTxSig(signature);
     setTokenAccount(mint.toString());
 
