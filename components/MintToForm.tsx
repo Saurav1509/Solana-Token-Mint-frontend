@@ -28,8 +28,36 @@ export const MintToForm: FC = () => {
     if (!connection || !publicKey) {
       return;
     }
-    
-    // BUILD AND SEND MINT TRANSACTION HERE
+
+    // BUILD AND SEND MINT TRANSACTION HERE 
+
+    const mint = new web3.PublicKey(event.target.mint.value);
+    const receipient = new web3.PublicKey(event.target.receipient.value);
+
+    const associatedTokenAddress = await getAssociatedTokenAddress(
+      mint,
+      receipient,
+      false,
+      TOKEN_PROGRAM_ID,
+      ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+
+    const transaction = new web3.Transaction().add(
+      createMintToInstruction(
+        mint,
+        receipient,
+        receipient,
+        10000000000
+      )
+    );
+
+    const signature = await sendTransaction(transaction, connection);
+    setTxSig(signature);
+    setTokenAccount(mint.toString());
+
+    const account = await getAccount(connection, associatedTokenAddress);
+    setBalance(account.amount.toString());
+
   };
 
   return (

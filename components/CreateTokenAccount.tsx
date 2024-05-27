@@ -27,8 +27,24 @@ export const CreateTokenAccountForm: FC = () => {
     if (!connection || !publicKey) {
       return;
     }
-    
+
     // BUILD AND SEND CREATE TOKEN ACCOUNT TRANSACTION HERE
+    const mint = new web3.PublicKey(event.target.mint.value);
+    const owner = new web3.PublicKey(event.target.owner.value)
+    const associatedTokenAddress = await getAssociatedTokenAddress(mint, owner, false, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
+
+    const transaction = new web3.Transaction().add(
+      createAssociatedTokenAccountInstruction(owner,
+        associatedTokenAddress,
+        owner,
+        mint
+      )
+    );
+
+    const signature = await sendTransaction(transaction, connection);
+    setTxSig(signature);
+    setTokenAccount(associatedTokenAddress.toString());
+
   };
 
   return (

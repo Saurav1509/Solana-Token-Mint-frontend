@@ -28,7 +28,30 @@ export const CreateMintForm: FC = () => {
     }
 
     // BUILD AND SEND CREATE MINT TRANSACTION HERE
+    const lamports = await getMinimumBalanceForRentExemptMint(connection);
+    const programId = TOKEN_PROGRAM_ID;
+    const accountKeypair = web3.Keypair.generate();
+    setMint(accountKeypair.publicKey.toString())
 
+    const transaction = new web3.Transaction().add(
+      web3.SystemProgram.createAccount({
+        fromPubkey: publicKey,
+        newAccountPubkey: accountKeypair.publicKey,
+        space: MINT_SIZE,
+        lamports,
+        programId,
+      }),
+      createInitializeMintInstruction(
+        accountKeypair.publicKey,
+        7,
+        publicKey,
+        null,
+        programId
+      )
+    )
+
+    const signature = await sendTransaction(transaction, connection)
+    setTxSig(signature);
   };
 
   return (
